@@ -1,0 +1,32 @@
+{
+    "name": "@josey/logger",
+    "version": "1.0.0",
+    "description": "Yet another logging module",
+    "type": "module",
+    "main": "./dist/src/index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "author": "Josey Wörmann <jcw05@gmx.de>",
+    "license": "MIT",
+    "repository": {
+        "url": "https://github.com/joseywoermann/logger"
+    },
+    "bugs": {
+        "url": "https://github.com/joseywoermann/logger/issues"
+    },
+    "dependencies": {
+        "chalk": "^4.1.2"
+    },
+    "devDependencies": {
+        "typescript": "^4.5.2"
+    },
+    "types": "./dist/src/index.d.ts",
+    "exports": {
+        "import": "./dist/src/index.js"
+    },
+    "files": [
+        "dist",
+        "src"
+    ]
+}
