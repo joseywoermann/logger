@@ -32,9 +32,9 @@ const logger = new Logger("local", {
     },
 });
 
-logger.debug<string>("Hello", "there!");
-logger.info<number>(1, 2, 3, 4, 5, 6, 7, 8, 9);
-logger.warn<boolean>(false, true);
+logger.debug<string>("Hello there!");
+logger.info<number>(1, 2, 3);
+logger.warn<boolean>(false);
 logger.error<string[]>(["a", "b", "c"]);
 ```
 
