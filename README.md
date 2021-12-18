@@ -51,9 +51,9 @@ Logger.error<T>(...messages: T[])
 
 ### Configuration
 
-it is possible to modify the loggers behaviour and appereance in the constructor.
+It is possible to modify the loggers behaviour and appearance in the constructor.
 
-The fist argument determines whether to use UTC or local time.
+The first argument determines whether to use UTC or local time.
 The second argument can be used to change the colors used to highlight the log level.
 
 ```ts
