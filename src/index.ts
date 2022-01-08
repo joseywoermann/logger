@@ -1,10 +1,23 @@
 // @ts-expect-error
 import chalk from "chalk";
+import { Console } from "console";
+import * as fs from "fs";
 
 type Timezone = "UTC" | "local";
 
 interface Config {
-    colors: Colors;
+    timezone?: Timezone;
+    colors?: Colors;
+    output?: ConsoleOutputOptions | FileOutputOptions;
+}
+
+interface ConsoleOutputOptions {
+    type: "console";
+}
+
+interface FileOutputOptions {
+    type: "file";
+    file: string;
 }
 
 interface Colors {
@@ -14,12 +27,18 @@ interface Colors {
     ERROR: string;
 }
 
-enum DefaultColors {
-    DEBUG = "#9DD1BA",
-    INFO = "#BAD755",
-    WARN = "#FDD662",
-    ERROR = "#FD647A",
-}
+const defaultConfig: Config = {
+    timezone: "UTC",
+    colors: {
+        DEBUG: "#9DD1BA",
+        INFO: "#BAD755",
+        WARN: "#FDD662",
+        ERROR: "#FD647A",
+    },
+    output: {
+        type: "console",
+    },
+};
 
 /**
  * Yet another logging module
@@ -27,19 +46,23 @@ enum DefaultColors {
  * @see https://github.com/joseywoermann/logger
  */
 export default class Logger {
-    readonly #timezone: Timezone;
-    readonly #config: Config = {
-        colors: DefaultColors,
-    };
+    private readonly _config: Config = defaultConfig;
+    private readonly _console: Console = console;
 
     /**
-     * Create a new Logger instance with a given time zone setting.
+     * Creates a new Logger instance with a given time zone setting.
      * @param timezone Either `"UTC"` or `"local"`. This decides whether to use the local timezone or UTC as the time.
      * @param config Additional settings like custom colors.
      */
-    constructor(timezone: Timezone, config?: Config) {
-        this.#timezone = timezone;
-        this.#config = config ?? this.#config;
+    constructor(config?: Config) {
+        this._config.timezone = config?.timezone ?? defaultConfig.timezone;
+        this._config.colors = config?.colors ?? defaultConfig.colors;
+        this._config.output = config?.output ?? defaultConfig.output;
+
+        // If a log file has been specified, set up a custom Console object with the target
+        if (this._config.output.type === "file") {
+            this._console = new Console({ stdout: fs.createWriteStream(config?.output["file"]) });
+        }
     }
 
     /**
@@ -47,7 +70,14 @@ export default class Logger {
      * @param messages
      */
     public debug = <T>(...messages: T[]): void => {
-        console.debug(`${this.time()} ${chalk.hex(this.#config.colors.DEBUG)("[DEBUG]")}`, ...messages);
+        this._console.debug(
+            `${this.time()} ${
+                this._config.output?.type === "console"
+                    ? chalk.hex(this._config.colors.DEBUG)("[DEBUG]")
+                    : "[DEBUG]"
+            }`,
+            ...messages
+        );
     };
 
     /**
@@ -55,7 +85,14 @@ export default class Logger {
      * @param messages
      */
     public info = <T>(...messages: T[]): void => {
-        console.info(`${this.time()} ${chalk.hex(this.#config.colors.INFO)("[INFO] ")}`, ...messages);
+        this._console.info(
+            `${this.time()} ${
+                this._config.output?.type === "console"
+                    ? chalk.hex(this._config.colors.INFO)("[INFO] ")
+                    : "[INFO] "
+            }`,
+            ...messages
+        );
     };
 
     /**
@@ -63,7 +100,14 @@ export default class Logger {
      * @param messages
      */
     public warn = <T>(...messages: T[]): void => {
-        console.warn(`${this.time()} ${chalk.hex(this.#config.colors.WARN)("[WARN] ")}`, ...messages);
+        this._console.warn(
+            `${this.time()} ${
+                this._config.output?.type === "console"
+                    ? chalk.hex(this._config.colors.WARN)("[WARN] ")
+                    : "[WARN] "
+            }`,
+            ...messages
+        );
     };
 
     /**
@@ -71,7 +115,14 @@ export default class Logger {
      * @param messages
      */
     public error = <T>(...messages: T[]): void => {
-        console.error(`${this.time()} ${chalk.hex(this.#config.colors.ERROR)("[ERROR]")}`, ...messages);
+        this._console.error(
+            `${this.time()} ${
+                this._config.output?.type === "console"
+                    ? chalk.hex(this._config.colors.ERROR)("[ERROR]")
+                    : "[ERROR]"
+            }`,
+            ...messages
+        );
     };
 
     /**
@@ -81,7 +132,7 @@ export default class Logger {
     private time = (): string => {
         const now = new Date();
 
-        if (this.#timezone === "UTC") {
+        if (this._config.timezone === "UTC") {
             return `[${now.getUTCFullYear()}-${this.format(now.getUTCMonth() + 1)}-${this.format(
                 now.getUTCDate()
             )}] [${this.format(now.getUTCHours())}:${this.format(now.getUTCMinutes())}:${this.format(
